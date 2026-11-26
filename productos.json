@@ -1,0 +1,162 @@
+{
+  "actualizado_en": "2026-11-26T13:54:21",
+  "tienda": {
+    "nombre": "CajaPOS MX",
+    "whatsapp_telefono": "525626444362"
+  },
+  "domicilio_habilitado": true,
+  "puente_activo": true,
+  "puente_url": "https://script.google.com/macros/s/AKfycbzN4VZ_XOFzSXOZmz2-JutU7ND0hI1oEasiuSELnTxo5I9saZfgb-f25N2HGJpTaC-R/exec",
+  "productos": [
+    {
+      "id": "prod_1795655630904_aeedd3",
+      "nombre": "Azucar",
+      "categoria": "Abarrotes",
+      "precio": 50.0,
+      "tipo_venta": "granel",
+      "unidad_medida": "kg",
+      "disponible": true,
+      "stock": 49.5
+    },
+    {
+      "id": "p10",
+      "nombre": "Huevo Blanco (1/2 Kg)",
+      "categoria": "Abarrotes",
+      "precio": 24.0,
+      "tipo_venta": "pieza",
+      "unidad_medida": "pza",
+      "disponible": true,
+      "stock": 0.0
+    },
+    {
+      "id": "p9",
+      "nombre": "Leche Entera 1L",
+      "categoria": "Abarrotes",
+      "precio": 27.5,
+      "tipo_venta": "pieza",
+      "unidad_medida": "pza",
+      "disponible": true,
+      "stock": 4.0
+    },
+    {
+      "id": "prod_1795655522051_ab3d5e",
+      "nombre": "huevo",
+      "categoria": "Abarrotes",
+      "precio": 50.0,
+      "tipo_venta": "granel",
+      "unidad_medida": "kg",
+      "disponible": true,
+      "stock": 29.7
+    },
+    {
+      "id": "prod_1795644938492_149e98",
+      "nombre": "maiz palomero (1/2)",
+      "categoria": "Abarrotes",
+      "precio": 20.0,
+      "tipo_venta": "pieza",
+      "unidad_medida": "pza",
+      "disponible": true,
+      "stock": 0.0
+    },
+    {
+      "id": "prod_1795644978281_541ed6",
+      "nombre": "maiz palomero (1/4)",
+      "categoria": "Abarrotes",
+      "precio": 10.0,
+      "tipo_venta": "pieza",
+      "unidad_medida": "pza",
+      "disponible": true,
+      "stock": 5.0
+    },
+    {
+      "id": "p2",
+      "nombre": "Agua Natural 1L",
+      "categoria": "Bebidas",
+      "precio": 16.0,
+      "tipo_venta": "pieza",
+      "unidad_medida": "pza",
+      "disponible": true,
+      "stock": 0.0
+    },
+    {
+      "id": "p3",
+      "nombre": "Jugo de Naranja 500ml",
+      "categoria": "Bebidas",
+      "precio": 20.0,
+      "tipo_venta": "pieza",
+      "unidad_medida": "pza",
+      "disponible": true,
+      "stock": 0.0
+    },
+    {
+      "id": "p1",
+      "nombre": "Refresco Cola 600ml",
+      "categoria": "Bebidas",
+      "precio": 22.0,
+      "tipo_venta": "pieza",
+      "unidad_medida": "pza",
+      "disponible": true,
+      "stock": 12.0
+    },
+    {
+      "id": "p5",
+      "nombre": "Galletas de Chocolate",
+      "categoria": "Botanas y Dulces",
+      "precio": 18.0,
+      "tipo_venta": "pieza",
+      "unidad_medida": "pza",
+      "disponible": true,
+      "stock": 0.0
+    },
+    {
+      "id": "p4",
+      "nombre": "Papas Fritas Saladas",
+      "categoria": "Botanas y Dulces",
+      "precio": 19.5,
+      "tipo_venta": "pieza",
+      "unidad_medida": "pza",
+      "disponible": true,
+      "stock": -4.0
+    },
+    {
+      "id": "p6",
+      "nombre": "Café Americano 12oz",
+      "categoria": "Cafetería y Pan",
+      "precio": 28.0,
+      "tipo_venta": "pieza",
+      "unidad_medida": "pza",
+      "disponible": true,
+      "stock": -1.0
+    },
+    {
+      "id": "p8",
+      "nombre": "Sándwich Jamón y Queso",
+      "categoria": "Cafetería y Pan",
+      "precio": 38.0,
+      "tipo_venta": "pieza",
+      "unidad_medida": "pza",
+      "disponible": true,
+      "stock": 3.0
+    },
+    {
+      "id": "p12",
+      "nombre": "Bolsa Reutilizable",
+      "categoria": "Servicios / Otros",
+      "precio": 10.0,
+      "tipo_venta": "pieza",
+      "unidad_medida": "pza",
+      "disponible": true,
+      "stock": 7.0
+    },
+    {
+      "id": "p11",
+      "nombre": "Copia / Impresión B&N",
+      "categoria": "Servicios / Otros",
+      "precio": 2.0,
+      "tipo_venta": "pieza",
+      "unidad_medida": "pza",
+      "disponible": true,
+      "stock": 100.0
+    }
+  ]
+}

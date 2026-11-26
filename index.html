@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Pedido · CajaPOS MX</title>
+  <style>
+    :root { color-scheme: light; --indigo:#4f46e5; --ink:#0f172a; --muted:#64748b; --line:#e2e8f0; --bg:#f8fafc; }
+    * { box-sizing: border-box; }
+    body { margin:0; background:var(--bg); color:var(--ink); font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; padding-bottom:96px; }
+    header { position:sticky; top:0; z-index:5; background:linear-gradient(135deg,#312e81,#4f46e5); color:white; padding:18px 16px 16px; box-shadow:0 6px 18px rgba(49,46,129,.22); }
+    header h1 { margin:0; font-size:1.2rem; letter-spacing:.01em; }
+    header p { margin:4px 0 0; font-size:.78rem; opacity:.85; }
+    main { max-width:720px; margin:0 auto; padding:16px; }
+    .notice { background:#fef3c7; border:1px solid #fcd34d; color:#92400e; border-radius:14px; padding:12px 14px; font-size:.85rem; margin-bottom:14px; }
+    .banner { border-radius:14px; padding:12px 14px; font-size:.84rem; font-weight:700; line-height:1.35; margin-bottom:14px; }
+    .banner.activo { background:#dcfce7; border:1px solid #86efac; color:#166534; }
+    .banner.inactivo { background:#fee2e2; border:1px solid #fecaca; color:#991b1b; }
+    select { width:100%; border:1px solid var(--line); border-radius:12px; padding:11px 12px; font-size:.95rem; font-family:inherit; background:white; }
+    .campo-oculto { display:none; }
+    .aviso-pago { background:#eff6ff; border:1px solid #bfdbfe; color:#1e40af; border-radius:12px; padding:10px 12px; font-size:.8rem; margin-top:10px; }
+    .search { width:100%; padding:12px 14px; border:1px solid var(--line); border-radius:14px; font-size:1rem; background:white; margin-bottom:12px; }
+    .chips { display:flex; gap:8px; overflow-x:auto; padding-bottom:8px; margin-bottom:10px; scrollbar-width:none; }
+    .chips::-webkit-scrollbar { display:none; }
+    .chip { white-space:nowrap; border:1px solid var(--line); background:white; color:var(--muted); border-radius:999px; padding:7px 13px; font-size:.8rem; font-weight:600; }
+    .chip.activo { background:var(--indigo); border-color:var(--indigo); color:white; }
+    .card { background:white; border:1px solid var(--line); border-radius:16px; padding:14px; margin-bottom:10px; box-shadow:0 2px 8px rgba(15,23,42,.04); }
+    .card h3 { margin:0; font-size:.98rem; line-height:1.3; }
+    .card .desc { margin:5px 0 0; color:var(--muted); font-size:.78rem; line-height:1.35; }
+    .card .meta { margin-top:8px; display:flex; flex-wrap:wrap; gap:6px 10px; align-items:center; font-size:.76rem; color:var(--muted); }
+    .precio { color:var(--ink); font-weight:800; font-size:.95rem; }
+    .tag { background:#eef2ff; color:#4338ca; border-radius:999px; padding:3px 8px; font-weight:700; font-size:.68rem; }
+    .agregar { margin-top:11px; display:flex; gap:8px; }
+    button { font-family:inherit; cursor:pointer; border:0; }
+    .btn { background:var(--indigo); color:white; border-radius:12px; padding:10px 14px; font-size:.84rem; font-weight:700; }
+    .btn.secundario { background:#e2e8f0; color:var(--ink); }
+    .btn:disabled { opacity:.45; cursor:not-allowed; }
+    .cantidad { width:92px; padding:10px; border:1px solid var(--line); border-radius:12px; font-size:.9rem; }
+    .barra { position:fixed; left:0; right:0; bottom:0; z-index:6; background:white; border-top:1px solid var(--line); padding:10px 16px calc(10px + env(safe-area-inset-bottom)); box-shadow:0 -6px 18px rgba(15,23,42,.08); }
+    .barra-inner { max-width:720px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:12px; }
+    .barra strong { display:block; font-size:1rem; }
+    .barra small { display:block; color:var(--muted); font-size:.72rem; }
+    .overlay { position:fixed; inset:0; background:rgba(15,23,42,.55); display:none; align-items:flex-end; justify-content:center; z-index:10; }
+    .overlay.visible { display:flex; }
+    .sheet { background:white; width:100%; max-width:720px; max-height:88vh; overflow:auto; border-radius:20px 20px 0 0; padding:18px 16px calc(22px + env(safe-area-inset-bottom)); }
+    .sheet h2 { margin:0 0 4px; font-size:1.1rem; }
+    .sheet .cerrar { float:right; background:#f1f5f9; border-radius:10px; padding:6px 10px; color:var(--muted); font-weight:700; }
+    label { display:block; font-size:.76rem; font-weight:700; color:var(--muted); margin:12px 0 5px; }
+    input, textarea { width:100%; border:1px solid var(--line); border-radius:12px; padding:11px 12px; font-size:.95rem; font-family:inherit; }
+    textarea { min-height:70px; resize:vertical; }
+    .resumen { background:#f8fafc; border:1px solid var(--line); border-radius:14px; padding:12px; margin-top:14px; font-size:.84rem; }
+    .resumen div { display:flex; justify-content:space-between; gap:10px; padding:3px 0; }
+    .total { border-top:1px solid var(--line); margin-top:8px; padding-top:9px; font-weight:800; font-size:1rem; }
+    .enviar { width:100%; margin-top:14px; padding:14px; font-size:.95rem; background:#16a34a; }
+    .ok { background:#dcfce7; border:1px solid #86efac; color:#166534; border-radius:14px; padding:14px; margin-top:14px; font-size:.86rem; }
+    .ok a { color:#166534; font-weight:800; }
+    .vacio { text-align:center; color:var(--muted); padding:26px 10px; font-size:.86rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>CajaPOS MX</h1>
+    <p>Catálogo y pedido por WhatsApp · Entrega o pasar a recoger</p>
+  </header>
+
+  <main>
+    
+      <div class="banner activo">Pedidos a domicilio disponibles. También puedes recoger en tienda.</div>
+    
+    
+    <div id="avisoWhatsapp" class="notice campo-oculto">Falta configurar el WhatsApp de la tienda en Configuración.</div>
+    <div id="avisoCatalogo" class="notice campo-oculto"></div>
+    <input id="busqueda" class="search" type="search" placeholder="Buscar producto..." autocomplete="off">
+    <div id="chips" class="chips"></div>
+    <div id="catalogo"></div>
+  </main>
+
+  <div class="barra">
+    <div class="barra-inner">
+      <div>
+        <strong id="resumenCantidad">0 artículos</strong>
+        <small id="resumenTotal">$0.00</small>
+      </div>
+      <button class="btn" id="verPedido" onclick="abrirPedido()">Ver pedido</button>
+    </div>
+  </div>
+
+  <div class="overlay" id="overlay" onclick="if(event.target===this) cerrarPedido()">
+    <div class="sheet">
+      <button class="cerrar" onclick="cerrarPedido()">Cerrar</button>
+      <h2>Tu pedido</h2>
+      <p style="margin:0;color:var(--muted);font-size:.8rem">Completa tus datos y te llevamos el resumen listo a WhatsApp.</p>
+      <label for="clienteNombre">Nombre *</label>
+      <input id="clienteNombre" maxlength="80" placeholder="Ej. María López">
+      <label for="clienteTelefono">Teléfono (opcional)</label>
+      <input id="clienteTelefono" maxlength="30" placeholder="Ej. 55 1234 5678">
+      <label for="tipoEntrega">Entrega</label>
+      <select id="tipoEntrega">
+        <option value="domicilio">A domicilio</option>
+        <option value="tienda">Recoger en tienda</option>
+      </select>
+      <label for="metodoPago">Método de pago</label>
+      <select id="metodoPago">
+        <option value="efectivo">Efectivo (contra entrega)</option>
+        <option value="tarjeta">Tarjeta (mismo precio)</option>
+      </select>
+      <div id="bloqueEfectivo">
+        <label for="montoPagoOpcion">¿Con cuánto pagas?</label>
+        <select id="montoPagoOpcion">
+          <option value="exacto">Pago exacto</option>
+          <option value="100">$100.00</option>
+          <option value="200">$200.00</option>
+          <option value="500">$500.00</option>
+          <option value="otro">Otro monto</option>
+        </select>
+        <input id="montoPagoOtro" class="campo-oculto" type="number" min="0" step="0.01" placeholder="Monto con el que pagas">
+        <p id="cambioEstimado" style="margin:8px 0 0;font-size:.8rem;color:var(--muted);font-weight:600"></p>
+      </div>
+      <div id="avisoTarjeta" class="aviso-pago campo-oculto">Pago con tarjeta al mismo precio (se envía terminal / pago en tienda)</div>
+      <label for="clienteNotas">Notas / dirección</label>
+      <textarea id="clienteNotas" maxlength="300" placeholder="Ej. sin cebolla, dirección completa, referencias"></textarea>
+      <div class="resumen" id="resumenPedido"></div>
+      <div id="avisoWhatsappPedido" class="notice campo-oculto">Falta configurar el WhatsApp de la tienda en Configuración.</div>
+      <button class="btn enviar" id="enviar" onclick="enviarPedido()">Enviar pedido por WhatsApp</button>
+      <div id="respuesta"></div>
+    </div>
+  </div>
+
+  <script>
+    let PRODUCTOS = [];
+    let NOMBRE_EMPRESA = "CajaPOS MX";
+    function normalizarTelefonoWhatsapp(valor) {
+      let digitos = String(valor || '').replace(/\D/g, '');
+      if (digitos.startsWith('00')) digitos = digitos.slice(2);
+      if (digitos.length === 10) digitos = '52' + digitos;
+      return digitos;
+    }
+    let TELEFONO_WHATSAPP = normalizarTelefonoWhatsapp("525626444362");
+    let PERMITIR_PEDIDOS = true;
+    let DOMICILIO_HABILITADO = true;
+    const ESTATICO = true;
+    const URL_CATALOGO = "productos.json";
+    let PUENTE_ACTIVO = true;
+    let PUENTE_URL = "https://script.google.com/macros/s/AKfycbzN4VZ_XOFzSXOZmz2-JutU7ND0hI1oEasiuSELnTxo5I9saZfgb-f25N2HGJpTaC-R/exec";
+
+    const carrito = new Map();
+    let categoriaActiva = 'Todos';
+
+    function dinero(valor) {
+      return '$' + Number(valor || 0).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function redondear(valor) {
+      return Math.round((Number(valor) || 0) * 100) / 100;
+    }
+
+    function actualizarAvisoWhatsapp() {
+      const listo = Boolean(TELEFONO_WHATSAPP);
+      ['avisoWhatsapp', 'avisoWhatsappPedido'].forEach(id => {
+        const aviso = document.getElementById(id);
+        if (aviso) aviso.classList.toggle('campo-oculto', listo);
+      });
+      const enviar = document.getElementById('enviar');
+      if (enviar && !listo) enviar.disabled = true;
+    }
+
+    function urlWhatsapp(mensaje) {
+      if (!TELEFONO_WHATSAPP) return '';
+      return 'https://wa.me/' + TELEFONO_WHATSAPP + '?text=' + encodeURIComponent(mensaje);
+    }
+
+    function mensajePedido(calculo) {
+      const lineas = [
+        'Pedido web · ' + NOMBRE_EMPRESA,
+        'Cliente: ' + document.getElementById('clienteNombre').value.trim()
+      ];
+      const telefonoCliente = document.getElementById('clienteTelefono').value.trim();
+      if (telefonoCliente) lineas.push('Teléfono: ' + telefonoCliente);
+      lineas.push('Entrega: ' + (calculo.tipoEntrega === 'domicilio' ? 'A domicilio' : 'Recoger en tienda'));
+      if (calculo.metodoPago === 'tarjeta') {
+        lineas.push('Pago: Tarjeta al mismo precio (se envía terminal / pago en tienda)');
+      } else {
+        lineas.push(
+          'Pago: Efectivo (contra entrega) · Paga con ' + dinero(calculo.montoPago) +
+          ' · Cambio estimado ' + dinero(calculo.cambioEstimado)
+        );
+      }
+      lineas.push('');
+      lineas.push('Pedido:');
+      carrito.forEach(item => {
+        const subtotal = redondear(item.producto.price * item.cantidad);
+        lineas.push(
+          '- ' + item.cantidad + ' ' + unidad(item.producto) + ' x ' +
+          item.producto.name + ' · ' + dinero(subtotal)
+        );
+      });
+      lineas.push('');
+      lineas.push('Total estimado: ' + dinero(calculo.total));
+      const notas = document.getElementById('clienteNotas').value.trim();
+      if (notas) lineas.push('Notas: ' + notas);
+      return lineas.join('\n');
+    }
+
+    function mostrarEnlaceWhatsapp(enlace, prefijo) {
+      const contenedor = document.getElementById('respuesta');
+      contenedor.className = 'ok';
+      contenedor.textContent = '';
+      contenedor.appendChild(document.createTextNode(prefijo));
+      const ancla = document.createElement('a');
+      ancla.href = enlace;
+      ancla.target = '_blank';
+      ancla.rel = 'noopener';
+      ancla.textContent = 'Abrir WhatsApp con el pedido';
+      contenedor.appendChild(ancla);
+      window.open(enlace, '_blank', 'noopener');
+    }
+
+    function notificarPuente(campo) {
+      if (!PUENTE_ACTIVO || !PUENTE_URL) return;
+      try {
+        fetch(PUENTE_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          keepalive: true,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ accion: 'registrar_pedido', pedido: campo })
+        }).catch(() => {});
+      } catch (error) {}
+    }
+
+    async function cargarCatalogoEstatico() {
+      const aviso = document.getElementById('avisoCatalogo');
+      try {
+        const respuesta = await fetch(URL_CATALOGO || 'productos.json', { cache: 'no-store' });
+        if (!respuesta.ok) throw new Error('No se pudo cargar el catálogo');
+        const datos = await respuesta.json();
+        PRODUCTOS = (datos.productos || []).filter(producto => producto.disponible !== false);
+        NOMBRE_EMPRESA = (datos.tienda && datos.tienda.nombre) || NOMBRE_EMPRESA;
+        TELEFONO_WHATSAPP = normalizarTelefonoWhatsapp(datos.tienda && datos.tienda.whatsapp_telefono);
+        DOMICILIO_HABILITADO = !!datos.domicilio_habilitado;
+        PUENTE_ACTIVO = !!datos.puente_activo && !!datos.puente_url;
+        PUENTE_URL = PUENTE_ACTIVO ? datos.puente_url : '';
+        PERMITIR_PEDIDOS = true;
+      } catch (error) {
+        if (aviso) {
+          aviso.textContent = 'No se pudo cargar productos.json. Publica el archivo junto a index.html.';
+          aviso.classList.remove('campo-oculto');
+        }
+      }
+      actualizarAvisoWhatsapp();
+      renderChips();
+      renderCatalogo();
+      actualizarResumen();
+    }
+
+    function calcularPedido() {
+      let subtotal = 0;
+      carrito.forEach(item => { subtotal += item.producto.price * item.cantidad; });
+      subtotal = redondear(subtotal);
+      const metodoPago = document.getElementById('metodoPago')?.value || 'efectivo';
+      const total = subtotal;
+      let montoPago = 0;
+      let cambioEstimado = 0;
+      if (metodoPago !== 'tarjeta') {
+        const opcion = document.getElementById('montoPagoOpcion')?.value || 'exacto';
+        if (opcion === 'exacto') {
+          montoPago = total;
+        } else if (opcion === 'otro') {
+          montoPago = Number(document.getElementById('montoPagoOtro')?.value || 0);
+        } else {
+          montoPago = Number(opcion);
+        }
+        if (!Number.isFinite(montoPago) || montoPago < 0) montoPago = 0;
+        cambioEstimado = montoPago > 0 ? redondear(montoPago - total) : 0;
+      }
+      return {
+        tipoEntrega: document.getElementById('tipoEntrega')?.value || (DOMICILIO_HABILITADO ? 'domicilio' : 'tienda'),
+        metodoPago,
+        subtotal,
+        total,
+        montoPago,
+        cambioEstimado
+      };
+    }
+
+    function esGranel(producto) {
+      return String(producto.tipo_venta || '').toLowerCase() === 'granel';
+    }
+
+    function unidad(producto) {
+      return esGranel(producto) ? (producto.unidad_medida || 'kg') : 'pza';
+    }
+
+    function categorias() {
+      return ['Todos', ...new Set(PRODUCTOS.map(p => p.category || 'General'))];
+    }
+
+    function renderChips() {
+      const contenedor = document.getElementById('chips');
+      contenedor.textContent = '';
+      categorias().forEach(categoria => {
+        const boton = document.createElement('button');
+        boton.className = 'chip' + (categoria === categoriaActiva ? ' activo' : '');
+        boton.textContent = categoria;
+        boton.onclick = () => { categoriaActiva = categoria; renderChips(); renderCatalogo(); };
+        contenedor.appendChild(boton);
+      });
+    }
+
+    function renderCatalogo() {
+      const texto = document.getElementById('busqueda').value.trim().toLowerCase();
+      const contenedor = document.getElementById('catalogo');
+      contenedor.textContent = '';
+      const lista = PRODUCTOS.filter(p => {
+        const coincideCategoria = categoriaActiva === 'Todos' || (p.category || 'General') === categoriaActiva;
+        const coincideTexto = !texto || String(p.name).toLowerCase().includes(texto) || String(p.descripcion || '').toLowerCase().includes(texto);
+        return coincideCategoria && coincideTexto;
+      });
+      if (!lista.length) {
+        const vacio = document.createElement('div');
+        vacio.className = 'vacio';
+        vacio.textContent = 'No encontramos productos con ese filtro.';
+        contenedor.appendChild(vacio);
+        return;
+      }
+      lista.forEach(producto => {
+        const tarjeta = document.createElement('div');
+        tarjeta.className = 'card';
+        const titulo = document.createElement('h3');
+        titulo.textContent = producto.name;
+        tarjeta.appendChild(titulo);
+        if (producto.descripcion) {
+          const desc = document.createElement('p');
+          desc.className = 'desc';
+          desc.textContent = producto.descripcion;
+          tarjeta.appendChild(desc);
+        }
+        const meta = document.createElement('div');
+        meta.className = 'meta';
+        const precio = document.createElement('span');
+        precio.className = 'precio';
+        precio.textContent = dinero(producto.price) + ' / ' + unidad(producto);
+        meta.appendChild(precio);
+        if (esGranel(producto)) {
+          const tag = document.createElement('span');
+          tag.className = 'tag';
+          tag.textContent = 'GRANEL';
+          meta.appendChild(tag);
+        }
+        if (Number(producto.stock) > 0) {
+          const stock = document.createElement('span');
+          stock.textContent = 'Disponible: ' + Number(producto.stock).toFixed(3).replace(/\.000$/, '') + ' ' + unidad(producto);
+          meta.appendChild(stock);
+        }
+        tarjeta.appendChild(meta);
+        const acciones = document.createElement('div');
+        acciones.className = 'agregar';
+        let entrada = null;
+        if (esGranel(producto)) {
+          entrada = document.createElement('input');
+          entrada.className = 'cantidad';
+          entrada.type = 'number';
+          entrada.min = '0.001';
+          entrada.step = '0.25';
+          entrada.value = '0.500';
+          acciones.appendChild(entrada);
+        }
+        const boton = document.createElement('button');
+        boton.className = 'btn';
+        boton.textContent = esGranel(producto) ? 'Agregar kg' : 'Agregar';
+        boton.onclick = () => {
+          const cantidad = esGranel(producto) ? Number(entrada.value) : 1;
+          if (!Number.isFinite(cantidad) || cantidad <= 0) return;
+          agregar(producto, Math.round(cantidad * 1000) / 1000);
+          boton.textContent = 'Agregado ✓';
+          setTimeout(() => { boton.textContent = esGranel(producto) ? 'Agregar kg' : 'Agregar'; }, 900);
+        };
+        acciones.appendChild(boton);
+        tarjeta.appendChild(acciones);
+        contenedor.appendChild(tarjeta);
+      });
+    }
+
+    function agregar(producto, cantidad) {
+      const actual = carrito.get(producto.id) || { producto, cantidad: 0 };
+      actual.cantidad = Math.round((actual.cantidad + cantidad) * 1000) / 1000;
+      carrito.set(producto.id, actual);
+      actualizarResumen();
+    }
+
+    function actualizarResumen() {
+      let articulos = 0;
+      let total = 0;
+      let granel = false;
+      carrito.forEach(item => {
+        articulos += item.cantidad;
+        total += item.producto.price * item.cantidad;
+        if (esGranel(item.producto)) granel = true;
+      });
+      const cantidadTexto = granel ? articulos.toFixed(3).replace(/\.000$/, '') + ' kg/pza' : articulos + (articulos === 1 ? ' artículo' : ' artículos');
+      document.getElementById('resumenCantidad').textContent = cantidadTexto;
+      document.getElementById('resumenTotal').textContent = dinero(calcularPedido().total || total);
+      document.getElementById('verPedido').disabled = carrito.size === 0;
+    }
+
+    function itemsPedido() {
+      return Array.from(carrito.values()).map(item => ({
+        id: item.producto.id,
+        qty: item.cantidad,
+        name: item.producto.name,
+        price: item.producto.price,
+        tipo_venta: item.producto.tipo_venta || 'pieza',
+        unidad_medida: item.producto.unidad_medida || 'pza'
+      }));
+    }
+
+    function agregarFilaResumen(resumen, etiqueta, valor, clase) {
+      const fila = document.createElement('div');
+      if (clase) fila.className = clase;
+      fila.appendChild(document.createTextNode(etiqueta));
+      const fuerte = document.createElement('strong');
+      fuerte.textContent = valor;
+      fila.appendChild(fuerte);
+      resumen.appendChild(fila);
+    }
+
+    function actualizarResumenPedido() {
+      const resumen = document.getElementById('resumenPedido');
+      if (!resumen) return;
+      resumen.textContent = '';
+      const calculo = calcularPedido();
+      carrito.forEach(item => {
+        const subtotal = redondear(item.producto.price * item.cantidad);
+        agregarFilaResumen(
+          resumen,
+          String(item.cantidad) + ' ' + unidad(item.producto) + ' × ' + item.producto.name,
+          dinero(subtotal)
+        );
+      });
+      agregarFilaResumen(resumen, 'Total estimado', dinero(calculo.total), 'total');
+      if (calculo.metodoPago === 'efectivo' && calculo.montoPago > 0) {
+        agregarFilaResumen(resumen, 'Paga con', dinero(calculo.montoPago));
+        agregarFilaResumen(resumen, 'Cambio estimado', dinero(Math.max(calculo.cambioEstimado, 0)));
+      }
+      const cambio = document.getElementById('cambioEstimado');
+      const insuficiente = calculo.metodoPago === 'efectivo' && calculo.montoPago > 0 && calculo.cambioEstimado < 0;
+      if (cambio) {
+        cambio.textContent = insuficiente
+          ? 'El monto es menor al total estimado'
+          : (calculo.metodoPago === 'efectivo' && calculo.montoPago > 0
+            ? 'Cambio estimado: ' + dinero(calculo.cambioEstimado)
+            : '');
+        cambio.style.color = insuficiente ? '#b91c1c' : 'var(--muted)';
+      }
+      const enviar = document.getElementById('enviar');
+      if (enviar) enviar.disabled = !PERMITIR_PEDIDOS || insuficiente || !TELEFONO_WHATSAPP;
+      actualizarResumen();
+    }
+
+    function actualizarOpcionesPago() {
+      const metodoPago = document.getElementById('metodoPago')?.value || 'efectivo';
+      const opcion = document.getElementById('montoPagoOpcion')?.value || 'exacto';
+      document.getElementById('bloqueEfectivo')?.classList.toggle('campo-oculto', metodoPago !== 'efectivo');
+      document.getElementById('avisoTarjeta')?.classList.toggle('campo-oculto', metodoPago !== 'tarjeta');
+      document.getElementById('montoPagoOtro')?.classList.toggle('campo-oculto', opcion !== 'otro');
+      actualizarResumenPedido();
+    }
+
+    function abrirPedido() {
+      if (carrito.size === 0) return;
+      if (!DOMICILIO_HABILITADO) document.getElementById('tipoEntrega').value = 'tienda';
+      document.getElementById('respuesta').textContent = '';
+      document.getElementById('enviar').style.display = PERMITIR_PEDIDOS && TELEFONO_WHATSAPP ? '' : 'none';
+      actualizarAvisoWhatsapp();
+      actualizarOpcionesPago();
+      document.getElementById('overlay').classList.add('visible');
+    }
+
+    function cerrarPedido() {
+      document.getElementById('overlay').classList.remove('visible');
+    }
+
+    async function enviarPedido() {
+      const nombre = document.getElementById('clienteNombre').value.trim();
+      if (!nombre) {
+        alert('Escribe tu nombre para enviar el pedido.');
+        return;
+      }
+      if (!TELEFONO_WHATSAPP) {
+        alert('Falta configurar el WhatsApp de la tienda en Configuración.');
+        actualizarAvisoWhatsapp();
+        return;
+      }
+      const calculo = calcularPedido();
+      const registro = {
+        id: 'web_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8),
+        cliente_nombre: nombre,
+        cliente_telefono: document.getElementById('clienteTelefono').value.trim(),
+        notas: document.getElementById('clienteNotas').value.trim(),
+        items: itemsPedido(),
+        tipo_entrega: calculo.tipoEntrega,
+        metodo_pago: calculo.metodoPago,
+        subtotal: calculo.subtotal,
+        monto_pago: calculo.montoPago,
+        cambio_estimado: calculo.cambioEstimado,
+        total_estimado: calculo.total
+      };
+      if (calculo.tipoEntrega === 'domicilio' && !DOMICILIO_HABILITADO) {
+        alert('Los pedidos a domicilio están desactivados.');
+        return;
+      }
+      if (calculo.metodoPago === 'efectivo' && calculo.montoPago > 0 && calculo.cambioEstimado < 0) {
+        alert('El monto con el que pagas debe ser mayor o igual al total estimado.');
+        return;
+      }
+      const boton = document.getElementById('enviar');
+      boton.disabled = true;
+      boton.textContent = 'Enviando...';
+      try {
+        if (ESTATICO) {
+          notificarPuente(registro);
+          const enlace = urlWhatsapp(mensajePedido(calculo));
+          if (!enlace) throw new Error('Falta configurar el WhatsApp de la tienda en Configuración.');
+          mostrarEnlaceWhatsapp(enlace, 'Pedido listo. ');
+        } else {
+          const respuesta = await fetch('/api/pedidos-web', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(registro)
+          });
+          const data = await respuesta.json().catch(() => ({}));
+          if (!respuesta.ok || !data.ok) throw new Error(data.error || 'No se pudo enviar el pedido');
+          const enlace = data.pedido && data.pedido.whatsapp_url;
+          if (!enlace || !enlace.startsWith('https://wa.me/' + TELEFONO_WHATSAPP + '?')) {
+            throw new Error('No se pudo preparar el WhatsApp de la tienda.');
+          }
+          mostrarEnlaceWhatsapp(enlace, 'Pedido registrado. ');
+        }
+        carrito.clear();
+        actualizarResumen();
+      } catch (error) {
+        const contenedor = document.getElementById('respuesta');
+        contenedor.className = 'notice';
+        contenedor.textContent = error.message;
+      } finally {
+        boton.disabled = false;
+        boton.textContent = 'Enviar pedido por WhatsApp';
+      }
+    }
+
+    document.getElementById('busqueda').addEventListener('input', renderCatalogo);
+    document.getElementById('metodoPago').addEventListener('change', actualizarOpcionesPago);
+    document.getElementById('montoPagoOpcion').addEventListener('change', actualizarOpcionesPago);
+    document.getElementById('montoPagoOtro').addEventListener('input', actualizarResumenPedido);
+    if (ESTATICO) {
+      cargarCatalogoEstatico();
+    } else {
+      actualizarAvisoWhatsapp();
+      renderChips();
+      renderCatalogo();
+      actualizarResumen();
+    }
+  </script>
+</body>
+</html>
