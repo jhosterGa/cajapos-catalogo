@@ -65,7 +65,7 @@
 
   <main>
     
-      <div class="banner inactivo">Pedidos a domicilio desactivados. Solo puedes pedir para recoger en tienda.</div>
+      <div class="banner activo">Pedidos a domicilio disponibles. También puedes recoger en tienda.</div>
     
     
     <div id="avisoWhatsapp" class="notice campo-oculto">Falta configurar el WhatsApp de la tienda en Configuración.</div>
@@ -96,7 +96,7 @@
       <input id="clienteTelefono" maxlength="30" placeholder="Ej. 55 1234 5678">
       <label for="tipoEntrega">Entrega</label>
       <select id="tipoEntrega">
-        
+        <option value="domicilio">A domicilio</option>
         <option value="tienda">Recoger en tienda</option>
       </select>
       <label for="metodoPago">Método de pago</label>
@@ -156,7 +156,7 @@
     let NOMBRE_EMPRESA = "CajaPOS MX";
     let TELEFONO_WHATSAPP = normalizarTelefonoWhatsapp("525626444362");
     let PERMITIR_PEDIDOS = true;
-    let DOMICILIO_HABILITADO = false;
+    let DOMICILIO_HABILITADO = true;
     const ESTATICO = true;
     const URL_CATALOGO = "productos.json";
     let PUENTE_ACTIVO = true;
