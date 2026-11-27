@@ -1,10 +1,10 @@
 {
-  "actualizado_en": "2026-11-26T13:54:21",
+  "actualizado_en": "2026-11-26T18:07:11",
   "tienda": {
     "nombre": "CajaPOS MX",
     "whatsapp_telefono": "525626444362"
   },
-  "domicilio_habilitado": true,
+  "domicilio_habilitado": false,
   "puente_activo": true,
   "puente_url": "https://script.google.com/macros/s/AKfycbzN4VZ_XOFzSXOZmz2-JutU7ND0hI1oEasiuSELnTxo5I9saZfgb-f25N2HGJpTaC-R/exec",
   "productos": [

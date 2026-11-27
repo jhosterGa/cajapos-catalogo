@@ -65,7 +65,7 @@
 
   <main>
     
-      <div class="banner activo">Pedidos a domicilio disponibles. También puedes recoger en tienda.</div>
+      <div class="banner inactivo">Pedidos a domicilio desactivados. Solo puedes pedir para recoger en tienda.</div>
     
     
     <div id="avisoWhatsapp" class="notice campo-oculto">Falta configurar el WhatsApp de la tienda en Configuración.</div>
@@ -96,7 +96,7 @@
       <input id="clienteTelefono" maxlength="30" placeholder="Ej. 55 1234 5678">
       <label for="tipoEntrega">Entrega</label>
       <select id="tipoEntrega">
-        <option value="domicilio">A domicilio</option>
+        
         <option value="tienda">Recoger en tienda</option>
       </select>
       <label for="metodoPago">Método de pago</label>
@@ -127,17 +127,36 @@
   </div>
 
   <script>
-    let PRODUCTOS = [];
-    let NOMBRE_EMPRESA = "CajaPOS MX";
     function normalizarTelefonoWhatsapp(valor) {
       let digitos = String(valor || '').replace(/\D/g, '');
       if (digitos.startsWith('00')) digitos = digitos.slice(2);
       if (digitos.length === 10) digitos = '52' + digitos;
       return digitos;
     }
+
+    function normalizarProducto(producto) {
+      const p = producto || {};
+      const tipoVenta = String(p.tipo_venta || p.tipoVenta || 'pieza').toLowerCase() === 'granel' ? 'granel' : 'pieza';
+      const unidadMedida = String(p.unidad_medida || p.unidad || p.unit || (tipoVenta === 'granel' ? 'kg' : 'pza')).trim() || (tipoVenta === 'granel' ? 'kg' : 'pza');
+      const stock = Number(p.stock);
+      return {
+        id: String(p.id || ''),
+        name: String(p.name || p.nombre || '').trim(),
+        category: String(p.category || p.categoria || 'General').trim() || 'General',
+        price: Number(p.price ?? p.precio ?? 0),
+        tipo_venta: tipoVenta,
+        unidad_medida: unidadMedida,
+        disponible: p.disponible !== false && p.active !== false && p.activo !== 0,
+        stock: Number.isFinite(stock) ? stock : 0,
+        descripcion: String(p.descripcion || p.description || '').trim()
+      };
+    }
+
+    let PRODUCTOS = ([] || []).map(normalizarProducto);
+    let NOMBRE_EMPRESA = "CajaPOS MX";
     let TELEFONO_WHATSAPP = normalizarTelefonoWhatsapp("525626444362");
     let PERMITIR_PEDIDOS = true;
-    let DOMICILIO_HABILITADO = true;
+    let DOMICILIO_HABILITADO = false;
     const ESTATICO = true;
     const URL_CATALOGO = "productos.json";
     let PUENTE_ACTIVO = true;
@@ -148,6 +167,15 @@
 
     function dinero(valor) {
       return '$' + Number(valor || 0).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function precioProducto(producto) {
+      return dinero(producto.price) + ' / ' + unidad(producto);
+    }
+
+    function cantidadTexto(producto, cantidad) {
+      const valor = Number(cantidad) || 0;
+      return (esGranel(producto) ? valor.toFixed(3).replace(/\.?0+$/, '') : String(Math.round(valor))) + ' ' + unidad(producto);
     }
 
     function redondear(valor) {
@@ -190,8 +218,8 @@
       carrito.forEach(item => {
         const subtotal = redondear(item.producto.price * item.cantidad);
         lineas.push(
-          '- ' + item.cantidad + ' ' + unidad(item.producto) + ' x ' +
-          item.producto.name + ' · ' + dinero(subtotal)
+          '- ' + cantidadTexto(item.producto, item.cantidad) + ' x ' +
+          item.producto.name + ' (' + precioProducto(item.producto) + ') �� ' + dinero(subtotal)
         );
       });
       lineas.push('');
@@ -232,20 +260,29 @@
       const aviso = document.getElementById('avisoCatalogo');
       try {
         const respuesta = await fetch(URL_CATALOGO || 'productos.json', { cache: 'no-store' });
-        if (!respuesta.ok) throw new Error('No se pudo cargar el catálogo');
+        if (!respuesta.ok) throw new Error('No se pudo cargar el catǭlogo');
         const datos = await respuesta.json();
-        PRODUCTOS = (datos.productos || []).filter(producto => producto.disponible !== false);
+        PRODUCTOS = (datos.productos || []).map(normalizarProducto).filter(producto => producto.disponible);
         NOMBRE_EMPRESA = (datos.tienda && datos.tienda.nombre) || NOMBRE_EMPRESA;
         TELEFONO_WHATSAPP = normalizarTelefonoWhatsapp(datos.tienda && datos.tienda.whatsapp_telefono);
         DOMICILIO_HABILITADO = !!datos.domicilio_habilitado;
         PUENTE_ACTIVO = !!datos.puente_activo && !!datos.puente_url;
         PUENTE_URL = PUENTE_ACTIVO ? datos.puente_url : '';
         PERMITIR_PEDIDOS = true;
+        document.title = 'Pedido �� ' + NOMBRE_EMPRESA;
+        const h1 = document.querySelector('header h1');
+        if (h1) h1.textContent = NOMBRE_EMPRESA;
       } catch (error) {
         if (aviso) {
           aviso.textContent = 'No se pudo cargar productos.json. Publica el archivo junto a index.html.';
           aviso.classList.remove('campo-oculto');
         }
+      }
+      actualizarAvisoWhatsapp();
+      renderChips();
+      renderCatalogo();
+      actualizarResumen();
+    }
       }
       actualizarAvisoWhatsapp();
       renderChips();
@@ -312,8 +349,8 @@
       const contenedor = document.getElementById('catalogo');
       contenedor.textContent = '';
       const lista = PRODUCTOS.filter(p => {
-        const coincideCategoria = categoriaActiva === 'Todos' || (p.category || 'General') === categoriaActiva;
-        const coincideTexto = !texto || String(p.name).toLowerCase().includes(texto) || String(p.descripcion || '').toLowerCase().includes(texto);
+        const coincideCategoria = categoriaActiva === 'Todos' || p.category === categoriaActiva;
+        const coincideTexto = !texto || p.name.toLowerCase().includes(texto) || p.descripcion.toLowerCase().includes(texto);
         return coincideCategoria && coincideTexto;
       });
       if (!lista.length) {
@@ -339,7 +376,7 @@
         meta.className = 'meta';
         const precio = document.createElement('span');
         precio.className = 'precio';
-        precio.textContent = dinero(producto.price) + ' / ' + unidad(producto);
+        precio.textContent = precioProducto(producto);
         meta.appendChild(precio);
         if (esGranel(producto)) {
           const tag = document.createElement('span');
@@ -347,9 +384,9 @@
           tag.textContent = 'GRANEL';
           meta.appendChild(tag);
         }
-        if (Number(producto.stock) > 0) {
+        if (producto.stock > 0) {
           const stock = document.createElement('span');
-          stock.textContent = 'Disponible: ' + Number(producto.stock).toFixed(3).replace(/\.000$/, '') + ' ' + unidad(producto);
+          stock.textContent = 'Disponible: ' + cantidadTexto(producto, producto.stock);
           meta.appendChild(stock);
         }
         tarjeta.appendChild(meta);
@@ -361,7 +398,7 @@
           entrada.className = 'cantidad';
           entrada.type = 'number';
           entrada.min = '0.001';
-          entrada.step = '0.25';
+          entrada.step = '0.500';
           entrada.value = '0.500';
           acciones.appendChild(entrada);
         }
@@ -389,16 +426,18 @@
     }
 
     function actualizarResumen() {
-      let articulos = 0;
+      let piezas = 0;
+      let granelKg = 0;
       let total = 0;
-      let granel = false;
       carrito.forEach(item => {
-        articulos += item.cantidad;
         total += item.producto.price * item.cantidad;
-        if (esGranel(item.producto)) granel = true;
+        if (esGranel(item.producto)) granelKg += item.cantidad;
+        else piezas += item.cantidad;
       });
-      const cantidadTexto = granel ? articulos.toFixed(3).replace(/\.000$/, '') + ' kg/pza' : articulos + (articulos === 1 ? ' artículo' : ' artículos');
-      document.getElementById('resumenCantidad').textContent = cantidadTexto;
+      const partes = [];
+      if (piezas > 0) partes.push(piezas + (piezas === 1 ? ' pza' : ' pzas'));
+      if (granelKg > 0) partes.push(granelKg.toFixed(3).replace(/\.?0+$/, '') + ' kg');
+      document.getElementById('resumenCantidad').textContent = partes.join(' + ') || '0 artículos';
       document.getElementById('resumenTotal').textContent = dinero(calcularPedido().total || total);
       document.getElementById('verPedido').disabled = carrito.size === 0;
     }
@@ -433,7 +472,7 @@
         const subtotal = redondear(item.producto.price * item.cantidad);
         agregarFilaResumen(
           resumen,
-          String(item.cantidad) + ' ' + unidad(item.producto) + ' × ' + item.producto.name,
+          cantidadTexto(item.producto, item.cantidad) + ' × ' + item.producto.name,
           dinero(subtotal)
         );
       });
